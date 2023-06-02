@@ -12,6 +12,8 @@ import android.widget.TextView;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
+import java.util.Stack;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Button numeroZero,
@@ -89,8 +91,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onClick(View v) {
                 try {
-                    Expression expressao = new ExpressionBuilder(txtExpressao.getText().toString()).build();
-                    double resultado = expressao.evaluate();
+                    double resultado = calcularExpressao(txtExpressao.getText().toString());
                     long longResult = (long) resultado;
 
                     if (resultado == (double) longResult) {
@@ -103,6 +104,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         });
+    }
+
+    public static double calcularExpressao(String expressao) {
+        Stack<Double> pilha = new Stack<>();
+
+        String[] elementos = expressao.split(" ");
+
+        for (String elemento : elementos) {
+            if (isOperador(elemento)) {
+                double segundoOperando = pilha.pop();
+                double primeiroOperando = pilha.pop();
+                double resultado = realizarOperacao(elemento, primeiroOperando, segundoOperando);
+                pilha.push(resultado);
+            } else {
+                double numero = Double.parseDouble(elemento);
+                pilha.push(numero);
+            }
+        }
+
+        return pilha.pop();
+    }
+
+    private static double realizarOperacao(String operador, double primeiroOperando, double segundoOperando) {
+        switch (operador) {
+            case "+":
+                return primeiroOperando + segundoOperando;
+            case "-":
+                return primeiroOperando - segundoOperando;
+            case "*":
+                return primeiroOperando * segundoOperando;
+            case "/":
+                return primeiroOperando / segundoOperando;
+            default:
+                throw new IllegalArgumentException("Operador inválido: " + operador);
+        }
+    }
+
+    private static boolean isOperador(String elemento) {
+        return elemento.equals("+") || elemento.equals("-") || elemento.equals("*") || elemento.equals("/");
     }
 
     private void IniciarComponentes(){
